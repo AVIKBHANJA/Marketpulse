@@ -57,6 +57,7 @@ export default function Header() {
     const searchQuery = urlParams.toString();
     navigate(`/search?${searchQuery}`);
   };
+  
 
   return (
     <div className="border-b border-gray-200 dark:border-gray-800 px-4 md:px-6 py-3 bg-white dark:bg-gray-900 shadow-sm dark:shadow-gray-950">
@@ -110,7 +111,11 @@ export default function Header() {
             <FiInfo size={18} className="shrink-0" />
             <span className="hidden md:inline">About Us</span>
           </Link>
-          <Link 
+          
+
+          {currentUser && (
+          <>
+           <Link 
             to="/analysis" 
             className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
           >
@@ -124,6 +129,8 @@ export default function Header() {
             <FiRadio size={18} className="shrink-0" />
             <span className="hidden md:inline">News</span>
           </Link>
+          </>
+        )}
         </div>
 
         {/* Right Side Controls */}

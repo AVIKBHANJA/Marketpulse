@@ -24,15 +24,16 @@ export default function App() {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/search" element={<Search />} />
-        <Route path="/analysis" element={<StockPredictions />} />
-        <Route path="/news" element={<News />} />
+        
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/analysis" element={<StockPredictions />} />
+        <Route path="/news" element={<News />} />
         </Route>
         <Route element={<OnlyAdminPrivateRoute />}>
           {/* <Route path='/update-post/:postId' element={<UpdatePost />} /> */}
         </Route>
-        {/* <Route path='/post/:postSlug' element={<PostPage />} /> */}
+      
       </Routes>
       <Footer />
     </BrowserRouter>
