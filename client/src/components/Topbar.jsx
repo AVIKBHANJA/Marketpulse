@@ -30,7 +30,7 @@ const TopBar = ({
 
   return (
     <div
-      className="bg-gray-800 py-2 px-4 flex items-center"
+      className="dark:bg-gray-800 bg-slate-500 py-2 px-4 flex items-center"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -43,7 +43,7 @@ const TopBar = ({
           {[...data, ...data].map((item, index) => (
             <div
               key={index}
-              className="flex items-center gap-4 cursor-pointer hover:bg-gray-700 px-4 py-2"
+              className="flex items-center gap-4 cursor-pointer dark:hover:bg-gray-700 hover:bg-slate-800 px-4 py-2"
               onClick={() => onSelectStock(item)} // Clicking won't remove it
             >
               <span className="text-sm font-medium text-gray-100">

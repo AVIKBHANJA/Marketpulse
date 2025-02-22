@@ -3,6 +3,7 @@ import TopBar from '../components/Topbar';
 
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Radio, X } from 'lucide-react';
+import { FiSmile, FiMeh, FiFrown } from 'react-icons/fi';
 
 const VISIBLE_ITEMS = 5;
 const SLIDE_INTERVAL = 3000;
@@ -118,7 +119,7 @@ const IndexCard = ({ data }) => {
   const chartData = getRandomData(40, 60, 12);
   
   return (
-    <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
+    <div className="dark:bg-gray-900 bg-gray-400 rounded-lg p-6 border dark:border-gray-800">
       <div className="flex justify-between items-start mb-6">
         <div>
           <h3 className="text-lg font-bold">{data.name}</h3>
@@ -148,11 +149,11 @@ const IndexCard = ({ data }) => {
 
       <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
         <div>
-          <div className="text-gray-400">Day High</div>
+          <div className="dark:text-gray-400 font-bold">Day High</div>
           <div className="font-medium mt-1">₹{data.dayHigh}</div>
         </div>
         <div>
-          <div className="text-gray-400">Day Low</div>
+          <div className="dark:text-gray-400 font-bold">Day Low</div>
           <div className="font-medium mt-1">₹{data.dayLow}</div>
         </div>
       </div>
@@ -172,13 +173,21 @@ const MarketMood = () => {
   return (
     <div className="flex items-center gap-8">
       {moods.map(({ day, sentiment }) => (
-        <div key={day} className="flex flex-col items-center">
-          <div className={`w-12 h-12 rounded-full border-4 ${
-            sentiment === 'positive' ? 'border-green-500 bg-green-500/20' :
-            sentiment === 'negative' ? 'border-red-500 bg-red-500/20' :
-            'border-yellow-500 bg-yellow-500/20'
-          }`} />
-          <span className="text-gray-400 text-sm mt-2">{day}</span>
+        <div key={day} className="flex flex-col items-center group">
+          <div className={`w-12 h-12 rounded-full border-4 flex items-center justify-center transition-all ${
+            sentiment === 'positive' 
+              ? 'border-green-500 bg-green-500/20 text-green-500 hover:bg-green-500/30' :
+            sentiment === 'negative' 
+              ? 'border-red-500 bg-red-500/20 text-red-500 hover:bg-red-500/30' :
+              'border-yellow-500 bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30'
+          }`}>
+            {sentiment === 'positive' && <FiSmile className="w-6 h-6" />}
+            {sentiment === 'neutral' && <FiMeh className="w-6 h-6" />}
+            {sentiment === 'negative' && <FiFrown className="w-6 h-6" />}
+          </div>
+          <span className="text-gray-400 text-sm mt-2 group-hover:text-gray-300 transition-colors">
+            {day}
+          </span>
         </div>
       ))}
     </div>

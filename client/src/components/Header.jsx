@@ -2,7 +2,7 @@ import { Avatar, Dropdown } from 'flowbite-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { FaMoon, FaSun } from 'react-icons/fa';
-import { FiBriefcase, FiRadio, FiBarChart2 } from 'react-icons/fi';
+import { FiBriefcase, FiRadio, FiBarChart2, FiInfo } from 'react-icons/fi';
 import { useSelector, useDispatch } from 'react-redux';
 import { toggleTheme } from '../redux/theme/themeSlice';
 import { signoutSuccess } from '../redux/user/userSlice';
@@ -85,15 +85,19 @@ export default function Header() {
           {/* Navigation Buttons */}
           <Link to="/portfolio" className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white whitespace-nowrap">
             <FiBriefcase size={18} />
-            <span className="hidden md:inline">Portfolio</span>
+            <span className="hidden md:inline">ChatBot</span>
           </Link>
-          <Link to="/screener" className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white whitespace-nowrap">
+          {/* <Link to="/screener" className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white whitespace-nowrap">
             <FiRadio size={18} />
             <span className="hidden md:inline">Screener</span>
-          </Link>
-          <Link to="/gold" className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white whitespace-nowrap">
+          </Link> */}
+          <Link to="/analysis" className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white whitespace-nowrap">
             <FiBarChart2 size={18} />
-            <span className="hidden md:inline">Gold</span>
+            <span className="hidden md:inline">Analysis</span>
+          </Link>
+          <Link to="/about" className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white whitespace-nowrap">
+            <FiInfo size={18} />
+            <span className="hidden md:inline">About Us</span>
           </Link>
 
           {/* Theme Toggle */}
@@ -114,7 +118,7 @@ export default function Header() {
                   alt="user" 
                   img={currentUser.profilePicture} 
                   rounded 
-                  className="cursor-pointer border-2 border-blue-500"
+                  className="cursor-pointer "
                 />
               }
               className="z-50 dark:bg-gray-800 dark:border-gray-700"
