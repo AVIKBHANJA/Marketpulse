@@ -11,6 +11,7 @@ import OnlyAdminPrivateRoute from "./components/OnlyAdminPrivateRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import Search from "./pages/Search";
 import StockPredictions from "./components/StockPredictions";
+import News from "./pages/News";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/search" element={<Search />} />
         <Route path="/analysis" element={<StockPredictions />} />
+        <Route path="/news" element={<News />} />
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
         </Route>

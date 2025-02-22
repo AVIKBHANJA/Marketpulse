@@ -11,6 +11,46 @@ import { HfInference } from "@huggingface/inference";
 
 import axios from 'axios';
 
+import Sentiment from 'sentiment';
+import readline from 'readline';
+
+const sentiment = new Sentiment();
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+rl.question('Enter the stock ticker symbol (e.g., AAPL, TSLA): ', (ticker) => {
+  getYahooFinanceNews(ticker.toUpperCase());
+  rl.close();
+});
+async function getYahooFinanceNews(query) {
+  try {
+      const result = await yahooFinance.search(query);
+
+      if (!result.news || result.news.length === 0) {
+          console.log("No news articles found.");
+          return;
+      }
+
+      console.log(`\n🔍 Analyzing news for: ${query} 🔍\n`);
+
+      result.news.forEach((article, index) => {
+          const analysis = sentiment.analyze(article.title); // Analyze sentiment of title
+          let sentimentLabel = "Neutral";
+
+          if (analysis.score > 0) sentimentLabel = "Positive";
+          else if (analysis.score < 0) sentimentLabel = "Negative";
+
+         
+      });
+
+  } catch (error) {
+      console.error("Error fetching news:",error);
+ }
+}
+
+
 dotenv.config();
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
@@ -114,6 +154,36 @@ app.get("/analyze", async (req, res) => {
       });
   } catch (error) {
       res.status(500).json({ error: "Error fetching news or analyzing sentiment." });
+  }
+});
+// New Yahoo Finance News Endpoint
+app.get('/api/news/:ticker', async (req, res) => {
+  try {
+    const { ticker } = req.params;
+    const result = await yahooFinance.search(ticker);
+
+    if (!result.news || result.news.length === 0) {
+      return res.status(404).json({ message: "No news articles found." });
+    }
+
+    const analyzedNews = result.news.map(article => {
+      const analysis = sentiment.analyze(article.title);
+      return {
+        title: article.title,
+        link: article.link,
+        sentiment: analysis.score > 0 ? "Positive" : analysis.score < 0 ? "Negative" : "Neutral",
+        score: analysis.score
+      };
+    });
+
+    res.json({
+      ticker: ticker.toUpperCase(),
+      articles: analyzedNews
+    });
+
+  } catch (error) {
+    console.error("Error fetching news:", error);
+    res.status(500).json({ error: "Error fetching news articles" });
   }
 });
 

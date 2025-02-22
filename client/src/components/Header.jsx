@@ -87,6 +87,10 @@ export default function Header() {
             <FiBriefcase size={18} />
             <span className="hidden md:inline">ChatBot</span>
           </Link>
+          <Link to="/news" className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white whitespace-nowrap">
+            <FiRadio size={18} />
+            <span className="hidden md:inline">News</span>
+          </Link>
           {/* <Link to="/screener" className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white whitespace-nowrap">
             <FiRadio size={18} />
             <span className="hidden md:inline">Screener</span>
