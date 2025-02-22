@@ -1,85 +1,69 @@
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const TopBar = ({ 
-  data, 
-  currentIndex, 
-  onPrev, 
-  onNext, 
-  onSelectStock, 
-  visibleItems = 5, 
-  slideInterval = 3000 
+const TopBar = ({
+  data,
+  visibleItems = 5,
+  speed = 50, // Adjust scrolling speed (lower = faster)
+  onSelectStock,
 }) => {
-  const [isAutoSliding, setIsAutoSliding] = useState(true);
+  const scrollRef = useRef(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    if (!isAutoSliding || data.length <= visibleItems) return;
-    
-    const interval = setInterval(() => {
-      onNext();
-    }, slideInterval);
+    if (!scrollRef.current) return;
 
-    return () => clearInterval(interval);
-  }, [isAutoSliding, onNext, data.length, visibleItems, slideInterval]);
+    let animationFrame;
+    const scroll = () => {
+      if (scrollRef.current && !isHovered) {
+        scrollRef.current.scrollLeft += 1; // Move 1px per frame
+        if (scrollRef.current.scrollLeft >= scrollRef.current.scrollWidth / 2) {
+          scrollRef.current.scrollLeft = 0; // Reset to prevent jumps
+        }
+      }
+      animationFrame = requestAnimationFrame(scroll);
+    };
 
-  const itemWidthPercentage = 100 / visibleItems;
-  const containerWidth = (data.length * itemWidthPercentage);
+    animationFrame = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [isHovered]);
 
   return (
-    <div 
-      className="bg-gray-800 py-2 px-4 flex items-center justify-between"
-      onMouseEnter={() => setIsAutoSliding(false)}
-      onMouseLeave={() => setIsAutoSliding(true)}
+    <div
+      className="bg-gray-800 py-2 px-4 flex items-center"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <button 
-        onClick={onPrev}
-        className="text-gray-400 hover:text-white disabled:opacity-50"
-        disabled={currentIndex === 0 || data.length <= visibleItems}
+      <div
+        ref={scrollRef}
+        className="overflow-hidden whitespace-nowrap flex-1 relative"
+        style={{ scrollBehavior: "smooth" }}
       >
-        <ChevronLeft />
-      </button>
-
-      <div className="flex-1 overflow-hidden mx-4">
-        <div 
-          className="flex transition-transform duration-500 ease-in-out"
-          style={{ 
-            transform: `translateX(-${currentIndex * itemWidthPercentage}%)`,
-            width: `${containerWidth}%`
-          }}
-        >
-          {data.map((item) => (
+        <div className="flex w-max gap-8">
+          {[...data, ...data].map((item, index) => (
             <div
-              key={item.symbol}
-              className="flex-shrink-0 flex items-center justify-center gap-4 cursor-pointer hover:bg-gray-700 px-4 py-2"
-              style={{ width: `${itemWidthPercentage}%` }}
-              onClick={() => onSelectStock(item)}
+              key={index}
+              className="flex items-center gap-4 cursor-pointer hover:bg-gray-700 px-4 py-2"
+              onClick={() => onSelectStock(item)} // Clicking won't remove it
             >
               <span className="text-sm font-medium text-gray-100">
                 {item.symbol}
               </span>
-              <span className="text-sm text-gray-300">
-                ${item.price}
-              </span>
-              <span className={`text-sm font-medium ${
-                parseFloat(item.changePercent) >= 0 
-                  ? 'text-green-400' 
-                  : 'text-red-400'
-              }`}>
-                {parseFloat(item.changePercent) >= 0 ? '+' : ''}
+              <span className="text-sm text-gray-300">${item.price}</span>
+              <span
+                className={`text-sm font-medium ${
+                  parseFloat(item.changePercent) >= 0
+                    ? "text-green-400"
+                    : "text-red-400"
+                }`}
+              >
+                {parseFloat(item.changePercent) >= 0 ? "+" : ""}
                 {item.changePercent}%
               </span>
             </div>
           ))}
         </div>
       </div>
-
-      <button 
-        onClick={onNext}
-        className="text-gray-400 hover:text-white disabled:opacity-50"
-        disabled={currentIndex >= data.length - visibleItems || data.length <= visibleItems}
-      >
-        <ChevronRight />
-      </button>
     </div>
   );
 };
