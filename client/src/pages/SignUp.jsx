@@ -1,114 +1,150 @@
 import { Alert, Button, Label, Spinner, TextInput } from 'flowbite-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
 import OAuth from '../components/OAuth';
 
-export default function SignIn() {
+export default function SignUp() {
   const [formData, setFormData] = useState({});
-  const { loading, error: errorMessage } = useSelector((state) => state.user);
-  const dispatch = useDispatch();
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) {
-      return dispatch(signInFailure('Please fill all the fields'));
+    if (!formData.username || !formData.email || !formData.password) {
+      return setErrorMessage('Please fill out all fields.');
     }
     try {
-      dispatch(signInStart());
-      const res = await fetch('/api/auth/signin', {
+      setLoading(true);
+      setErrorMessage(null);
+      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (data.success === false) {
-        dispatch(signInFailure(data.message));
+        return setErrorMessage(data.message);
       }
-
-      if (res.ok) {
-        dispatch(signInSuccess(data));
-        navigate('/');
+      setLoading(false);
+      if(res.ok) {
+        navigate('/sign-in');
       }
     } catch (error) {
-      dispatch(signInFailure(error.message));
+      setErrorMessage(error.message);
+      setLoading(false);
     }
   };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark relative overflow-hidden">
-      {/* Background Animation */}
-      <div className="absolute top-0 left-0 w-full h-full bg-market-pattern opacity-40"></div>
-
-      <div className="flex flex-col md:flex-row items-center justify-center max-w-4xl w-full mx-5 bg-black/60 shadow-lg p-8 rounded-lg backdrop-blur-lg">
-        {/* Left Side */}
-        <div className="flex-1 text-white p-5">
-          <h1 className="text-4xl font-bold tracking-wide">
-            <span className="bg-gradient-to-r from-green-400 to-blue-500 text-transparent bg-clip-text">
-              StockMarketX
-            </span>
-          </h1>
-          <p className="text-sm mt-3 text-gray-300">
-            Analyze markets, track trends, and stay ahead. Sign in now to get real-time insights.
-          </p>
+    <div className='min-h-screen bg-gray-50 dark:bg-gray-900 pt-24'>
+      <div className='flex p-3 max-w-4xl mx-auto flex-col md:flex-row md:items-center gap-8'>
+        {/* Left side */}
+        <div className='flex-1 text-center md:text-left space-y-8'>
+          <Link to='/' className='inline-block'>
+            <div className='flex items-center space-x-3'>
+              <div className='p-3 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600'>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15l6-6 4.5 4.5 5.5-5.5"/>
+                </svg>
+              </div>
+              <span className='text-3xl font-bold dark:text-white'>
+                Market<span className='text-teal-500'>Pulse</span>
+              </span>
+            </div>
+          </Link>
+          <div className='space-y-4'>
+            <h2 className='text-4xl font-bold dark:text-gray-100'>
+              Market Mastery<br/>
+              <span className='text-teal-500'>Starts Here</span>
+            </h2>
+            <p className='text-gray-600 dark:text-gray-400 text-lg font-medium'>
+              Unlock institutional-grade analytics<br/>
+              and predictive insights
+            </p>
+          </div>
         </div>
 
-        {/* Right Side */}
-        <div className="flex-1 bg-white/10 p-8 rounded-md shadow-md">
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            <div>
-              <Label className="text-gray-300" value="Your email" />
-              <TextInput
-                type="email"
-                placeholder="name@finance.com"
-                id="email"
-                onChange={handleChange}
-                className="bg-gray-900 text-white border-none focus:ring-green-400"
-              />
-            </div>
-            <div>
-              <Label className="text-gray-300" value="Your password" />
-              <TextInput
-                type="password"
-                placeholder=""
-                id="password"
-                onChange={handleChange}
-                className="bg-gray-900 text-white border-none focus:ring-green-400"
-              />
-            </div>
-            <Button gradientDuoTone="greenToBlue" type="submit" disabled={loading} className="hover:scale-105 transition">
-              {loading ? (
-                <>
-                  <Spinner size="sm" />
-                  <span className="pl-3">Loading...</span>
-                </>
-              ) : (
-                'Sign In'
-              )}
-            </Button>
-            <OAuth />
-          </form>
+        {/* Right side */}
+        <div className='flex-1'>
+          <div className='bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-gray-950 p-8 border dark:border-gray-700'>
+            <h2 className='text-2xl font-bold dark:text-gray-100 mb-8'>Create Account</h2>
+            <form className='flex flex-col gap-5' onSubmit={handleSubmit}>
+              <div>
+                <Label className='text-gray-700 dark:text-gray-300 font-medium mb-2' value='Username' />
+                <TextInput
+                  type='text'
+                  placeholder='trader123'
+                  id='username'
+                  className='dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500'
+                  shadow={false}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <Label className='text-gray-700 dark:text-gray-300 font-medium mb-2' value='Email' />
+                <TextInput
+                  type='email'
+                  placeholder='name@company.com'
+                  id='email'
+                  className='dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500'
+                  shadow={false}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <Label className='text-gray-700 dark:text-gray-300 font-medium mb-2' value='Password' />
+                <TextInput
+                  type='password'
+                  placeholder='••••••••'
+                  id='password'
+                  className='dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500'
+                  shadow={false}
+                  onChange={handleChange}
+                />
+              </div>
+              
+              <Button
+                className='w-full h-12 font-bold text-white bg-gradient-to-br from-teal-600 to-emerald-700 hover:from-teal-700 hover:to-emerald-800 transition-all dark:from-teal-700 dark:to-emerald-800 dark:hover:from-teal-800 dark:hover:to-emerald-900'
+                type='submit'
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Spinner size='sm' />
+                    <span className='pl-3'>Creating Account...</span>
+                  </>
+                ) : (
+                  'Start Analyzing'
+                )}
+              </Button>
 
-          <div className="flex gap-2 text-sm mt-5 text-gray-300">
-            <span>Don’t have an account?</span>
-            <Link to="/sign-up" className="text-green-400 hover:underline">
-              Sign Up
-            </Link>
+              <div className='flex items-center my-4'>
+                <div className='flex-1 border-t border-gray-200 dark:border-gray-600'></div>
+                <span className='px-4 text-gray-400 dark:text-gray-500 text-sm'>Secure registration</span>
+                <div className='flex-1 border-t border-gray-200 dark:border-gray-600'></div>
+              </div>
+
+              <OAuth />
+            </form>
+
+            <div className='mt-6 text-center text-sm'>
+              <span className='text-gray-500 dark:text-gray-400'>Already have an account? </span>
+              <Link to='/sign-in' className='text-teal-600 dark:text-teal-400 font-semibold hover:text-teal-800 dark:hover:text-teal-300'>
+                Access Dashboard
+              </Link>
+            </div>
           </div>
-          
+
           {errorMessage && (
-            <Alert className="mt-5" color="failure">
-              {errorMessage}
+            <Alert className='mt-4 rounded-lg dark:bg-gray-700 dark:text-red-300' color='failure'>
+              <span className='font-medium'>Registration error:</span> {errorMessage}
             </Alert>
           )}
         </div>
       </div>
-    </div>
-  );
+    </div>
+  );
 }
