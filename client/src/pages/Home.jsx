@@ -1,69 +1,110 @@
 import React, { useState, useEffect } from 'react';
-import { Search, BarChart2, Briefcase, Radio, X } from 'lucide-react';
 import TopBar from '../components/Topbar';
+
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Radio, X } from 'lucide-react';
 
 const VISIBLE_ITEMS = 5;
 const SLIDE_INTERVAL = 3000;
 
-const getRandomData = (min, max) => {
-  return Array.from({ length: 6 }, () => Math.random() * (max - min) + min);
+const getRandomData = (min, max, points = 24) => {
+  return Array.from({ length: points }, (_, i) => ({
+    time: i,
+    value: Math.random() * (max - min) + min
+  }));
 };
 
 const StockDetails = ({ stock, onClose }) => {
   if (!stock) return null;
-
   const isPositive = parseFloat(stock.changePercent) >= 0;
+  const chartData = getRandomData(40, 60, 24);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full relative">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+      <div className="bg-gray-900 rounded-lg p-6 max-w-4xl w-full relative border border-gray-800">
         <button 
           onClick={onClose}
           className="absolute right-4 top-4 text-gray-400 hover:text-white"
         >
-          <X size={24} />
+          <X className="w-6 h-6" />
         </button>
         
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex justify-between items-start mb-8">
           <div>
-            <h2 className="text-2xl font-bold">{stock.name}</h2>
-            <div className="text-3xl font-semibold mt-2">
-              {Number(stock.price).toLocaleString()}
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold">{stock.name}</h2>
+              <span className="text-gray-400 text-sm">{stock.symbol}</span>
             </div>
-            <div className={isPositive ? 'text-green-500' : 'text-red-500'}>
-              {isPositive ? '+' : ''}{stock.changePercent}%
+            <div className="text-4xl font-bold mt-3">
+              ₹{Number(stock.price).toLocaleString()}
             </div>
-          </div>
-          <div className="w-48 h-24">
-            <MiniChart data={stock.chartData} isNegative={!isPositive} />
+            <div className={`flex items-center gap-2 mt-2 ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+              {isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+              <span className="text-lg">{isPositive ? '+' : ''}{stock.changePercent}%</span>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <div className="text-gray-400">Day High</div>
-            <div className="text-xl">{stock.dayHigh}</div>
-          </div>
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <div className="text-gray-400">Day Low</div>
-            <div className="text-xl">{stock.dayLow}</div>
-          </div>
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <div className="text-gray-400">Volume</div>
-            <div className="text-xl">{stock.volume?.toLocaleString()}</div>
-          </div>
+        <div className="h-64 mb-8">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <XAxis dataKey="time" />
+              <YAxis />
+              <Tooltip />
+              <Line 
+                type="monotone" 
+                dataKey="value" 
+                stroke={isPositive ? '#10b981' : '#ef4444'} 
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
 
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2">Additional Info</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="text-gray-400">52 Week High</div>
-              <div>{stock.fiftyTwoWeekHigh || 'N/A'}</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Day High', value: `₹${stock.dayHigh}` },
+            { label: 'Day Low', value: `₹${stock.dayLow}` },
+            { label: 'Volume', value: (stock.volume || 0).toLocaleString() },
+            { label: 'Market Cap', value: `₹${(Math.random() * 1000000).toFixed(2)}Cr` }
+          ].map((item, index) => (
+            <div key={index} className="bg-gray-800 rounded-lg p-4">
+              <div className="text-gray-400 text-sm">{item.label}</div>
+              <div className="text-xl mt-1">{item.value}</div>
             </div>
-            <div>
-              <div className="text-gray-400">52 Week Low</div>
-              <div>{stock.fiftyTwoWeekLow || 'N/A'}</div>
+          ))}
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h3 className="text-lg font-bold mb-4">Key Statistics</h3>
+            <div className="space-y-4">
+              {[
+                { label: '52 Week High', value: `₹${stock.fiftyTwoWeekHigh}` },
+                { label: '52 Week Low', value: `₹${stock.fiftyTwoWeekLow}` },
+                { label: 'P/E Ratio', value: (Math.random() * 30 + 10).toFixed(2) }
+              ].map((item, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <span className="text-gray-400">{item.label}</span>
+                  <span>{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold mb-4">Technical Indicators</h3>
+            <div className="space-y-4">
+              {[
+                { label: 'RSI (14)', value: (Math.random() * 40 + 30).toFixed(2) },
+                { label: 'MACD', value: 'Bullish', className: 'text-green-500' },
+                { label: '20-Day MA', value: `₹${(parseFloat(stock.price) * (1 + Math.random() * 0.1)).toFixed(2)}` }
+              ].map((item, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <span className="text-gray-400">{item.label}</span>
+                  <span className={item.className}>{item.value}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -74,34 +115,76 @@ const StockDetails = ({ stock, onClose }) => {
 
 const IndexCard = ({ data }) => {
   const isPositive = parseFloat(data.changePercent) >= 0;
+  const chartData = getRandomData(40, 60, 12);
   
   return (
-    <div className="bg-gray-800 p-4 rounded-lg">
-      <div className="flex justify-between items-start">
+    <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
+      <div className="flex justify-between items-start mb-6">
         <div>
-          <h3 className="text-base md:text-lg">{data.name}</h3>
-          <div className="text-xl md:text-2xl font-semibold mt-2">
-            {Number(data.price).toLocaleString()}
+          <h3 className="text-lg font-bold">{data.name}</h3>
+          <div className="text-2xl font-bold mt-2">
+            ₹{Number(data.price).toLocaleString()}
           </div>
-          <div className={isPositive ? 'text-green-500' : 'text-red-500'}>
-            {isPositive ? '+' : ''}{data.changePercent}%
+          <div className={`flex items-center gap-2 mt-2 ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+            {isPositive ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
+            <span>{isPositive ? '+' : ''}{data.changePercent}%</span>
           </div>
         </div>
-        <MiniChart data={data.chartData} isNegative={!isPositive} />
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-gray-400">
+      
+      <div className="h-32">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chartData}>
+            <Line 
+              type="monotone" 
+              dataKey="value" 
+              stroke={isPositive ? '#10b981' : '#ef4444'} 
+              strokeWidth={2}
+              dot={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
         <div>
-          <div>Day High</div>
-          <div className="text-white">{data.dayHigh}</div>
+          <div className="text-gray-400">Day High</div>
+          <div className="font-medium mt-1">₹{data.dayHigh}</div>
         </div>
         <div>
-          <div>Day Low</div>
-          <div className="text-white">{data.dayLow}</div>
+          <div className="text-gray-400">Day Low</div>
+          <div className="font-medium mt-1">₹{data.dayLow}</div>
         </div>
       </div>
     </div>
   );
 };
+
+const MarketMood = () => {
+  const moods = [
+    { day: 'MON', sentiment: 'positive' },
+    { day: 'TUE', sentiment: 'positive' },
+    { day: 'WED', sentiment: 'positive' },
+    { day: 'THU', sentiment: 'neutral' },
+    { day: 'FRI', sentiment: 'negative' }
+  ];
+  
+  return (
+    <div className="flex items-center gap-8">
+      {moods.map(({ day, sentiment }) => (
+        <div key={day} className="flex flex-col items-center">
+          <div className={`w-12 h-12 rounded-full border-4 ${
+            sentiment === 'positive' ? 'border-green-500 bg-green-500/20' :
+            sentiment === 'negative' ? 'border-red-500 bg-red-500/20' :
+            'border-yellow-500 bg-yellow-500/20'
+          }`} />
+          <span className="text-gray-400 text-sm mt-2">{day}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 
 const MiniChart = ({ data, isNegative }) => (
   <svg className="w-24 h-12 md:w-32 md:h-16" viewBox="0 0 100 50">
@@ -116,58 +199,8 @@ const MiniChart = ({ data, isNegative }) => (
   </svg>
 );
 
-const MarketMood = () => {
-  const days = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
-  
-  return (
-    <div className="flex items-center gap-2 md:gap-8 overflow-x-auto">
-      {days.map((day, index) => (
-        <div key={day} className="flex flex-col items-center flex-shrink-0">
-          <div 
-            className={`w-8 h-8 md:w-12 md:h-12 rounded-full border-4 ${
-              index < 3 ? 'border-green-500' : 'border-yellow-500'
-            }`} 
-          />
-          <span className="text-gray-400 text-xs md:text-sm mt-2">{day}</span>
-        </div>
-      ))}
-    </div>
-  );
-};
 
-// const TopBar = ({ data, currentIndex, onPrev, onNext, onSelectStock }) => (
-//   <div className="bg-gray-800 py-2 px-4 flex items-center justify-between">
-//     <button 
-//       onClick={onPrev}
-//       className="text-gray-400 hover:text-white disabled:opacity-50"
-//       disabled={currentIndex === 0}
-//     >
-//       <ChevronLeft />
-//     </button>
-//     <div className="flex gap-6 overflow-x-auto whitespace-nowrap px-4">
-//       {data.slice(currentIndex, currentIndex + 3).map((item) => (
-//         <div 
-//           key={item.symbol} 
-//           className="flex items-center gap-2 cursor-pointer hover:bg-gray-700 px-3 py-1 rounded"
-//           onClick={() => onSelectStock(item)}
-//         >
-//           <span className="text-sm md:text-base">{item.symbol}</span>
-//           <span className="text-sm md:text-base">{item.price}</span>
-//           <span className={parseFloat(item.changePercent) >= 0 ? 'text-green-500' : 'text-red-500'}>
-//             {parseFloat(item.changePercent) >= 0 ? '+' : ''}{item.changePercent}%
-//           </span>
-//         </div>
-//       ))}
-//     </div>
-//     <button 
-//       onClick={onNext}
-//       className="text-gray-400 hover:text-white disabled:opacity-50"
-//       disabled={currentIndex >= data.length - 3}
-//     >
-//       <ChevronRight />
-//     </button>
-//   </div>
-// );
+
 
 
 const Home = () => {
@@ -303,16 +336,14 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4">
           <div>
-            <h1 className="text-xl md:text-2xl mb-2 text-gray-900 dark:text-white">
-              Market Status: <span className="text-orange-500 dark:text-orange-400">Live</span>
+            <h1 className="text-xl md:text-2xl mb-2">
+              Market Status: <span className="text-orange-500">Live</span>
             </h1>
             <div className="flex gap-4 text-sm md:text-base">
               {marketData.indices.slice(0, 2).map(index => (
                 <span 
                   key={index.name}
-                  className={parseFloat(index.changePercent) >= 0 
-                    ? 'text-green-600 dark:text-green-400' 
-                    : 'text-red-600 dark:text-red-400'}
+                  className={parseFloat(index.changePercent) >= 0 ? 'text-green-500' : 'text-red-500'}
                 >
                   {index.name} {parseFloat(index.changePercent) >= 0 ? '▲' : '▼'} {Math.abs(index.changePercent)}%
                 </span>
