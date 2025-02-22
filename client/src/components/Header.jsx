@@ -17,6 +17,15 @@ export default function Header() {
   const { theme } = useSelector((state) => state.theme);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Add dark mode class to root element
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const searchTermFromUrl = urlParams.get('searchTerm');
@@ -50,7 +59,7 @@ export default function Header() {
   };
 
   return (
-    <div className="border-b border-gray-700 px-4 md:px-6 py-4 bg-gray-900">
+    <div className="border-b border-gray-200 dark:border-gray-700 px-4 md:px-6 py-4 bg-white dark:bg-gray-900">
       <div className="flex flex-col md:flex-row md:items-center justify-between max-w-7xl mx-auto gap-4">
         {/* Logo and Search */}
         <div className="flex items-center gap-4 md:gap-8">
@@ -60,11 +69,11 @@ export default function Header() {
             </span>
           </Link>
           <form onSubmit={handleSubmit} className="relative flex-1 md:flex-none">
-            <AiOutlineSearch className="absolute left-3 top-2.5 text-gray-400" size={20} />
+            <AiOutlineSearch className="absolute left-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
             <input
               type="text"
               placeholder="Search stocks, MFs & more"
-              className="bg-gray-800 pl-10 pr-4 py-2 rounded-lg w-full md:w-96 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-gray-50 dark:bg-gray-800 pl-10 pr-4 py-2 rounded-lg w-full md:w-96 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 border border-gray-300 dark:border-gray-700"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -74,15 +83,15 @@ export default function Header() {
         {/* Navigation and Auth */}
         <div className="flex items-center gap-4 md:gap-6 overflow-x-auto">
           {/* Navigation Buttons */}
-          <Link to="/portfolio" className="flex items-center gap-2 text-sm text-gray-300 hover:text-white whitespace-nowrap">
+          <Link to="/portfolio" className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white whitespace-nowrap">
             <FiBriefcase size={18} />
             <span className="hidden md:inline">Portfolio</span>
           </Link>
-          <Link to="/screener" className="flex items-center gap-2 text-sm text-gray-300 hover:text-white whitespace-nowrap">
+          <Link to="/screener" className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white whitespace-nowrap">
             <FiRadio size={18} />
             <span className="hidden md:inline">Screener</span>
           </Link>
-          <Link to="/gold" className="flex items-center gap-2 text-sm text-gray-300 hover:text-white whitespace-nowrap">
+          <Link to="/gold" className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white whitespace-nowrap">
             <FiBarChart2 size={18} />
             <span className="hidden md:inline">Gold</span>
           </Link>
@@ -90,7 +99,7 @@ export default function Header() {
           {/* Theme Toggle */}
           <button
             onClick={() => dispatch(toggleTheme())}
-            className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white"
+            className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
           >
             {theme === 'light' ? <FaSun size={18} /> : <FaMoon size={18} />}
           </button>
@@ -108,30 +117,30 @@ export default function Header() {
                   className="cursor-pointer border-2 border-blue-500"
                 />
               }
-              className="z-50 dark:bg-gray-800"
+              className="z-50 dark:bg-gray-800 dark:border-gray-700"
             >
-              <Dropdown.Header className="bg-gray-800 border-gray-700">
-                <span className="block text-sm text-white">@{currentUser.username}</span>
-                <span className="block text-sm font-medium text-gray-400 truncate">
+              <Dropdown.Header className="bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700">
+                <span className="block text-sm text-gray-900 dark:text-white">@{currentUser.username}</span>
+                <span className="block text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                   {currentUser.email}
                 </span>
               </Dropdown.Header>
               <Link to="/dashboard?tab=profile">
-                <Dropdown.Item className="text-white hover:bg-gray-700">
+                <Dropdown.Item className="text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                   Profile
                 </Dropdown.Item>
               </Link>
-              <Dropdown.Divider className="border-gray-700" />
+              <Dropdown.Divider className="border-gray-200 dark:border-gray-700" />
               <Dropdown.Item 
                 onClick={handleSignout}
-                className="text-white hover:bg-gray-700"
+                className="text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 Sign out
               </Dropdown.Item>
             </Dropdown>
           ) : (
             <Link to="/sign-in" className="whitespace-nowrap">
-              <button className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white transition-colors">
+              <button className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white transition-colors dark:bg-blue-500 dark:hover:bg-blue-600">
                 Sign Up / Login
               </button>
             </Link>

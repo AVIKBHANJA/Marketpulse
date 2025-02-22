@@ -287,7 +287,7 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
       <TopBar 
         data={marketData.tickers}
         currentIndex={tickerIndex}
@@ -303,14 +303,16 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4">
           <div>
-            <h1 className="text-xl md:text-2xl mb-2">
-              Market Status: <span className="text-orange-500">Live</span>
+            <h1 className="text-xl md:text-2xl mb-2 text-gray-900 dark:text-white">
+              Market Status: <span className="text-orange-500 dark:text-orange-400">Live</span>
             </h1>
             <div className="flex gap-4 text-sm md:text-base">
               {marketData.indices.slice(0, 2).map(index => (
                 <span 
                   key={index.name}
-                  className={parseFloat(index.changePercent) >= 0 ? 'text-green-500' : 'text-red-500'}
+                  className={parseFloat(index.changePercent) >= 0 
+                    ? 'text-green-600 dark:text-green-400' 
+                    : 'text-red-600 dark:text-red-400'}
                 >
                   {index.name} {parseFloat(index.changePercent) >= 0 ? '▲' : '▼'} {Math.abs(index.changePercent)}%
                 </span>
