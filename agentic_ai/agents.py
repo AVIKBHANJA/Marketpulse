@@ -54,8 +54,8 @@ class StockAnalysisAgents:
                 SearchTools.search_internet,
                 SearchTools.search_news,
                 #YahooFinanceNewsTool,
-                SECTools.search_10q, # ---------> Uses a lot of API calls and takes a lot of time
-                SECTools.search_10k
+                # SECTools.search_10q, # ---------> Uses a lot of API calls and takes a lot of time
+                # SECTools.search_10k
                 ],
             allow_delegation=False,
             verbose=True,

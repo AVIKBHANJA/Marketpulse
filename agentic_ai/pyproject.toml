@@ -17,6 +17,7 @@ openai = {version = "1.63.0", python=">=3.8"}
 langchain_openai = {version = " >=0.2.1,<0.3.0", python = ">=3.9.0,<4.0"}    
 rapidfuzz={version="3.12.1",python=">=3.9"}
 spacy = {version="3.8.4", python= ">=3.9,<3.13"}
+yfinance = {version="0.2.54", python=">=3.9"}
 
 
 [tool.poetry.dependencies]

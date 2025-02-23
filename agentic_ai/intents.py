@@ -2,17 +2,11 @@ import requests
 import json
 import re
 import os
-from fuzzywuzzy import fuzz, process
+from rapidfuzz import fuzz, process
 from dotenv import load_dotenv
 
-#import spacy
-from rapidfuzz import fuzz, process
-
-# Load spaCy English model for NER
-#nlp = spacy.load("en_core_web_sm")
-
 load_dotenv()
-ALPHA_VANTAGE_API_KEY = os.environ['ALPHA_VANTAGE_API_KEY']
+ALPHA_VANTAGE_API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY')
 BASE_URL = "https://www.alphavantage.co/query"
 
 def load_intents(file_path="intents.json"):
@@ -21,18 +15,11 @@ def load_intents(file_path="intents.json"):
 
 def extract_stock_symbol(user_input):
     match = re.search(r'\b[A-Z]{1,5}\b', user_input)  # Matches stock symbols (1-5 uppercase letters)
-    return match.group(0) if match else None
-
-
-# def extract_stock_symbol(user_input):
-#     """Extract stock symbols using NER (Named Entity Recognition)."""
-#     doc = nlp(user_input)
-#     for ent in doc.ents:
-#         if ent.label_ in ["ORG", "PRODUCT"]:  # Stocks often recognized as ORG/PRODUCT
-#             return ent.text.upper()
-#     return None  # No stock symbol found
-
-
+    if match:
+        return match.group(0)
+    else:
+        print("No valid stock symbol found in the input.")
+        return None
 
 def find_best_match(user_input, intents, threshold=88, fallback_threshold=65):
     all_examples = []
@@ -68,12 +55,16 @@ def find_best_match(user_input, intents, threshold=88, fallback_threshold=65):
 
     return None  # No match found
 
-
-
 def get_stock_trend(symbol):
-    params = {"function": "SMA", "symbol": symbol, "interval": "monthly", "time_period": "10", "series_type": "close", "apikey": ALPHA_VANTAGE_API_KEY}
-    response = requests.get(BASE_URL, params=params).json()
-    values = response.get("Technical Analysis: SMA", {})
+    params = {"function": "SMA", "symbol": symbol, "interval": "daily", "time_period": "10", "series_type": "close", "apikey": ALPHA_VANTAGE_API_KEY}
+    response = requests.get(BASE_URL, params=params)
+    #print(response)
+
+    if response.status_code != 200:
+        return "Error fetching trend data."
+
+    data = response.json()
+    values = data.get("Technical Analysis: SMA", {})
 
     if values:
         latest_date = list(values.keys())[0]
@@ -82,8 +73,14 @@ def get_stock_trend(symbol):
 
 def get_earnings_report(symbol):
     params = {"function": "EARNINGS", "symbol": symbol, "apikey": ALPHA_VANTAGE_API_KEY}
-    response = requests.get(BASE_URL, params=params).json()
-    earnings = response.get("quarterlyEarnings", [])
+    response = requests.get(BASE_URL, params=params)
+    #print(response)
+
+    if response.status_code != 200:
+        return "Error fetching earnings report."
+
+    data = response.json()
+    earnings = data.get("quarterlyEarnings", [])
 
     if earnings:
         return f"{symbol}'s last reported EPS: {earnings[0]['reportedEPS']} on {earnings[0]['fiscalDateEnding']}."
@@ -91,17 +88,33 @@ def get_earnings_report(symbol):
 
 def get_stock_price(symbol):
     params = {"function": "GLOBAL_QUOTE", "symbol": symbol, "apikey": ALPHA_VANTAGE_API_KEY}
-    response = requests.get(BASE_URL, params=params).json()
-    price = response.get("Global Quote", {}).get("05. price")
+    response = requests.get(BASE_URL, params=params)
+    #print(response)
 
-    if price:
-        return f"The current price of {symbol} is ${price}"
+    if response.status_code != 200:
+        return "Error fetching stock price."
+
+    data = response.json()
+    quote = data.get("Global Quote", {})
+
+    if quote:
+        price = quote.get("05. price")
+        if price:
+            return f"The current price of {symbol} is ${price}"
+        else:
+            return f"Price data not available for {symbol}"
     return f"Stock price not found for {symbol}"
 
 def get_stock_news(symbol):
     params = {"function": "NEWS_SENTIMENT", "tickers": symbol, "apikey": ALPHA_VANTAGE_API_KEY}
-    response = requests.get(BASE_URL, params=params).json()
-    articles = response.get("feed", [])
+    response = requests.get(BASE_URL, params=params)
+    #print(response)
+
+    if response.status_code != 200:
+        return "Error fetching stock news."
+
+    data = response.json()
+    articles = data.get("feed", [])
 
     if articles:
         return f"Latest headline: {articles[0]['title']}"
@@ -109,15 +122,29 @@ def get_stock_news(symbol):
 
 def get_stock_data(symbol):
     params = {"function": "OVERVIEW", "symbol": symbol, "apikey": ALPHA_VANTAGE_API_KEY}
-    response = requests.get(BASE_URL, params=params).json()
+    response = requests.get(BASE_URL, params=params)
+    #print(response)
 
-    return {
-        "symbol": symbol,
-        "price": get_stock_price(symbol),
-        "pe_ratio": response.get("PERatio", "N/A"),
-        "market_cap": response.get("MarketCapitalization", "N/A"),
-        "volume": response.get("Volume", "N/A"),
+    if response.status_code != 200:
+        return "Error fetching stock data."
+
+    data = response.json()
+    stock_data = {
+        "Symbol": symbol,
+        "Price": get_stock_price(symbol),
+        "P/E Ratio": data.get("PERatio", "N/A"),
+        "Market Cap": data.get("MarketCapitalization", "N/A"),
+        "Volume": data.get("Volume", "N/A"),
+        "Dividend Yield": data.get("DividendYield", "N/A"),
+        "52 Week High": data.get("52WeekHigh", "N/A"),
+        "52 Week Low": data.get("52WeekLow", "N/A"),
+        "EPS": data.get("EPS", "N/A"),
+        "Sector": data.get("Sector", "N/A"),
+        "Industry": data.get("Industry", "N/A")
     }
+
+    formatted_data = "\n".join([f"{key}: {value}" for key, value in stock_data.items()])
+    return formatted_data
 
 def get_response(user_input, intents):
     best_intent = find_best_match(user_input, intents)
@@ -138,7 +165,6 @@ def get_response(user_input, intents):
             return get_earnings_report(stock_symbol)
 
         elif best_intent["intent"] == "get_stock_data" and stock_symbol:
-            stock_data = get_stock_data(stock_symbol)
-            return f"The Current Stock Data for {stock_symbol} is: {stock_data}"
+            return get_stock_data(stock_symbol)
 
     return "I'm not sure how to answer that."

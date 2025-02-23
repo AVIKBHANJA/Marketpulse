@@ -1,84 +1,92 @@
-import os
-from textwrap import dedent
-from agents import StockAnalysisAgents
-from tasks import StockAnalysisTasks
-from crewai import Crew
-from intents import load_intents, get_response
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
+from typing import Optional
+from intents_2 import get_response, load_intents
+from stock_analysis_crew import StockAnalysisCrew
+import json
+from fastapi.middleware.cors import CORSMiddleware
 
-from dotenv import load_dotenv
-load_dotenv()
+app = FastAPI()
 
-class StockAnalysisCrew:
-    def __init__(self, company, date):
-        self.company = company
-        self.date = date
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For development only, restrict in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    def run(self):
-        # Define your custom agents and tasks in agents.py and tasks.py
-        agents = StockAnalysisAgents()
-        tasks = StockAnalysisTasks()
+# Load intents
+intents = load_intents()
 
-        # Define your custom agents and tasks here
-        financial_analyst = agents.financial_analyst()
-        research_analyst = agents.research_analyst()
-        investment_advicer = agents.investment_advicer()
+class StockQuery(BaseModel):
+    company: str
+    date: Optional[str] = None
+    user_query: Optional[str] = None
 
-        # Custom tasks include agent name and variables as input
-        Financial_analysis = tasks.Financial_analysis(
-            financial_analyst,
-            self.company,
-            self.date,
-        )
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    html_content = """
+    <html>
+        <head>
+            <title>Stock Analysis API</title>
+        </head>
+        <body>
+            <h1>Welcome to the Stock Analysis API</h1>
+            <p>Use the following endpoints to interact with the API:</p>
+            <ul>
+                <li><strong>/advisor</strong>: Provides a comprehensive stock analysis using StockAnalysisCrew.</li>
+                <li><strong>/basic</strong>: Provides basic stock information using intents.py.</li>
+            </ul>
+            <h2>Example Requests</h2>
+            <p><strong>POST /advisor</strong></p>
+            <pre>
+{
+    "company": "AAPL",
+    "date": "2023-10-01"
+}
+            </pre>
+            <p><strong>POST /basic</strong></p>
+            <pre>
+{
+    "user_query": "What is the stock price of AAPL?"
+}
+            </pre>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content, status_code=200)
 
-        Research = tasks.Research(
-            research_analyst,
-            self.company,
-            self.date
-        )
+@app.post("/advisor")
+async def advisor_endpoint(query: StockQuery):
+    try:
+        crew = StockAnalysisCrew(query.company, query.date)
+        result = crew.run()
+        return {"result": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-        Fillings_analysis = tasks.Fillings_analysis(
-            research_analyst,
-            self.company,
-            self.date,
-        )
+@app.post("/basic")
+async def basic_endpoint(query: StockQuery):
+    try:
+        if not query.user_query:
+            raise HTTPException(status_code=400, detail="User query is required for basic endpoint.")
+        response = get_response(query.user_query, intents)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-        Recommendation = tasks.Recommendation(
-            investment_advicer,
-            self.company,
-        )
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    print(f"Validation error: {exc.errors()}")
+    return JSONResponse(
+        status_code=422,
+        content=jsonable_encoder({"detail": exc.errors(), "body": exc.body}),
+    )
 
-        # Define your custom crew here
-        crew = Crew(
-            agents=[
-                financial_analyst,
-                research_analyst, 
-                investment_advicer],
-            tasks=[
-                Financial_analysis,
-                Research,
-                Fillings_analysis,
-                Recommendation],
-            verbose=True,
-        )
-
-        result = crew.kickoff()
-        return result
-
-
-# This is the main function that you will use to run your custom crew.
 if __name__ == "__main__":
-    print("########     Welcome to Stock Analysis Crew   ########")
-    print("-------------------------------------------------------------")
-
-    intents = load_intents()
-    user_query = input("Ask a stock-related question: \n")
-    print(get_response(user_query, intents))
-
-    company = input(dedent("""What is the Company that you want to analyze \n"""))
-    date = input(dedent("""On what Date you want to buy Stock \n"""))
-
-    custom_crew = StockAnalysisCrew(company, date)
-    result = custom_crew.run()
-    print("\n\n###########################################################")
-    print("### Final Result###\n")
-    #print(result)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,8 +1,8 @@
 import streamlit as st
 import json
 import os
-from intents import get_response, load_intents  # Import functions from intents.py
-from main import StockAnalysisCrew  # Import StockAnalysisCrew from main.py
+from intents_2 import get_response, load_intents  # Import functions from intents.py
+from stock_analysis_crew import StockAnalysisCrew  # Import StockAnalysisCrew from main.py
 import openai  # Import the OpenAI library
 
 # Set up your OpenAI API key
