@@ -1,6 +1,6 @@
 import { Avatar, Dropdown } from 'flowbite-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { AiOutlineSearch } from 'react-icons/ai';
+import { AiFillThunderbolt, AiOutlineSearch } from 'react-icons/ai';
 import { FaMoon, FaSun } from 'react-icons/fa';
 import { FiBriefcase, FiRadio, FiBarChart2, FiInfo, FiUser } from 'react-icons/fi';
 import { useSelector, useDispatch } from 'react-redux';
@@ -115,6 +115,13 @@ export default function Header() {
 
           {currentUser && (
           <>
+          <Link 
+            to="/stockanalysis" 
+            className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+          >
+            <AiFillThunderbolt size={18} className="shrink-0" />
+            <span className="hidden md:inline">FinBot</span>
+          </Link>
            <Link 
             to="/analysis" 
             className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"

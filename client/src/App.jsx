@@ -13,6 +13,7 @@ import Search from "./pages/Search";
 import StockPredictions from "./components/StockPredictions";
 import News from "./pages/News";
 import StockAnalysis from "./pages/StockAnalysis";
+import Analysis from "./pages/Analysis";
 
 export default function App() {
   return (
@@ -27,9 +28,11 @@ export default function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/stockanalysis" element={<StockAnalysis />} />
         
+        
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/analysis" element={<StockPredictions />} />
+         
+          <Route path="/analysis" element={<Analysis />} />
         <Route path="/news" element={<News />} />
         </Route>
         <Route element={<OnlyAdminPrivateRoute />}>
